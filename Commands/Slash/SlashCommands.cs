@@ -22,6 +22,7 @@ namespace DiscordBotTemplateNet8.Commands.Slash
             _commandHelper = new CommandHelper();
         }
 
+        // Example of simple command that replies to slash command (this one goes off and gets data from API too)
         [SlashCommand("Ping", "Replies with pong!")]
         public async Task Ping(InteractionContext ctx)
         {
@@ -31,7 +32,7 @@ namespace DiscordBotTemplateNet8.Commands.Slash
             // Check if the response contains the userId
             if (apiResult.TryGetValue("userId", out var userIdValue))
             {
-                await _commandHelper.BuildMessage(ctx, $"Pong! 🏓 \n User is: {userIdValue}", "", DiscordColor.SpringGreen);
+                await _commandHelper.BuildMessage(ctx, $"Pong! 🏓 \n Placeholder User is: {userIdValue}", "", DiscordColor.SpringGreen);
             }
             else
             {
@@ -39,12 +40,23 @@ namespace DiscordBotTemplateNet8.Commands.Slash
             }
         }
 
-
-
+        // Example of a command with that lets you upload a file and choose a user
         [SlashCommand("UploadFile", "Choose a user and upload a file")]
         public async Task UploadFile(InteractionContext ctx, [Option("DiscordUser", "Choose a discord user")] DiscordUser discordUser, [Option("File", "Upload a file")] DiscordAttachment discordAttachment)
         {
             await _commandHelper.BuildMessage(ctx, "File Uploaded", $"File Name is:{discordAttachment.FileName} - Selected user is: {discordUser.Username}", DiscordColor.SpringGreen);
+        }
+
+
+        // Example of a command with 3 required string options
+        [SlashCommand("SpinTheWheel", "Type in multiple options and ill choose for you")]
+        public async Task SpinTheWheel(InteractionContext ctx, [Option("OptionOne", "First choice")] string Option1, [Option("OptionTwo", "Second choice")] string Option2, [Option("OptionThree", "Third choice")] string Option3)
+        {
+            string[] options = { Option1, Option2, Option3 };
+
+            string randomChoice = options[new Random().Next(options.Length)];
+
+            await _commandHelper.BuildMessage(ctx, $"{randomChoice}", $"{randomChoice} has been chosen!", DiscordColor.SpringGreen);
         }
     }
 }
