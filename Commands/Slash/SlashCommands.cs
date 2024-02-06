@@ -25,8 +25,21 @@ namespace DiscordBotTemplateNet8.Commands.Slash
         [SlashCommand("Ping", "Replies with pong!")]
         public async Task Ping(InteractionContext ctx)
         {
-            await _commandHelper.BuildMessage(ctx, "Pong! 🏓", "23ms Europe Datacentre 📶", DiscordColor.SpringGreen);
+            // get response from an API
+            var apiResult = await WebHelper.GetJsonFromApi("https://jsonplaceholder.typicode.com/todos/1");
+
+            // Check if the response contains the userId
+            if (apiResult.TryGetValue("userId", out var userIdValue))
+            {
+                await _commandHelper.BuildMessage(ctx, $"Pong! 🏓 \n User is: {userIdValue}", "", DiscordColor.SpringGreen);
+            }
+            else
+            {
+                await _commandHelper.BuildMessage(ctx, $"Pong! 🏓 \n - Failed to get user", "", DiscordColor.SpringGreen);
+            }
         }
+
+
 
         [SlashCommand("UploadFile", "Choose a user and upload a file")]
         public async Task UploadFile(InteractionContext ctx, [Option("DiscordUser", "Choose a discord user")] DiscordUser discordUser, [Option("File", "Upload a file")] DiscordAttachment discordAttachment)

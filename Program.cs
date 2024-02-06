@@ -14,8 +14,9 @@ namespace DiscordBotTemplateNet8
         public static CommandsNextExtension Commands { get; set; }
         static async Task Main(string[] args)
         {
+            // Read info from config JSON file
             var botConfig = new BotConfig();
-            await botConfig.ReadJSON();
+            await botConfig.ReadJSONAsync();
 
             // Creating a new configuration for the Discord client
             var config = new DiscordConfiguration()
