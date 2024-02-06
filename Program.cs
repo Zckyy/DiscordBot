@@ -1,8 +1,10 @@
 ﻿using DiscordBotTemplateNet8.Commands;
+using DiscordBotTemplateNet8.Commands.Slash;
 using DiscordBotTemplateNet8.Config;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.EventArgs;
+using DSharpPlus.SlashCommands;
 
 namespace DiscordBotTemplateNet8
 {
@@ -15,6 +17,7 @@ namespace DiscordBotTemplateNet8
             var botConfig = new BotConfig();
             await botConfig.ReadJSON();
 
+            // Creating a new configuration for the Discord client
             var config = new DiscordConfiguration()
             {
                 Intents = DiscordIntents.All,
@@ -27,6 +30,7 @@ namespace DiscordBotTemplateNet8
 
             Client.Ready += Client_Ready;
 
+            // Creating a new configuration for the commands
             var commandsConfig = new CommandsNextConfiguration
             {
                 StringPrefixes = new string[] { botConfig.DiscordBotPrefix },
@@ -37,14 +41,16 @@ namespace DiscordBotTemplateNet8
 
             Commands = Client.UseCommandsNext(commandsConfig);
 
+            // Enabling slash commands
+            var slashCommandsConfig = Client.UseSlashCommands();
+
+            // Registering commands
+            slashCommandsConfig.RegisterCommands<SlashCommands>(814256164069441567);
             Commands.RegisterCommands<Basic>();
 
-            Console.WriteLine("============================== \n" +
-                              "NET 8.0 C# Discord Bot \n" +
-                              "Made from samjesus8/CSharp-Discord-Bot-Template-NET8 \n" +
-                              "==============================");
-
+            // Connect the client to the Discord gateway
             await Client.ConnectAsync();
+            // Keep the program running
             await Task.Delay(-1);
         }
 

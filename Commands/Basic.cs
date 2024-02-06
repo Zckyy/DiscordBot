@@ -3,6 +3,7 @@ using DSharpPlus.CommandsNext.Attributes;
 
 namespace DiscordBotTemplateNet8.Commands
 {
+    // Every Command class must be public and inherit from BaseCommandModule
     public class Basic : BaseCommandModule
     {
         [Command("test")]
