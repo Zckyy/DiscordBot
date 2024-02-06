@@ -46,7 +46,7 @@ namespace DiscordBotTemplateNet8
             var slashCommandsConfig = Client.UseSlashCommands();
 
             // Registering commands
-            slashCommandsConfig.RegisterCommands<SlashCommands>(814256164069441567);
+            slashCommandsConfig.RegisterCommands<SlashCommands>(814256164069441567); // This is the guild ID where the slash commands will be registered, if you want to register them globally, remove the guild ID
             Commands.RegisterCommands<Basic>();
 
             // Connect the client to the Discord gateway

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DiscordBotTemplateNet8.Helper;
+using System.Drawing;
 
 namespace DiscordBotTemplateNet8.Commands.Slash
 {
@@ -57,6 +58,29 @@ namespace DiscordBotTemplateNet8.Commands.Slash
             string randomChoice = options[new Random().Next(options.Length)];
 
             await _commandHelper.BuildMessage(ctx, $"{randomChoice}", $"{randomChoice} has been chosen!", DiscordColor.SpringGreen);
+        }
+
+        // Example of how to get discord user profile picutre
+        [SlashCommand("ProfilePicture", "Get the profile picture of a user")]
+        public async Task ProfilePicture(InteractionContext ctx, [Option("DiscordUser", "Choose a discord user")] DiscordUser discordUser)
+        {
+            // Get the member object from the discord user
+            // This would be the member object of the guild the command was used in
+            var member = await ctx.Guild.GetMemberAsync(discordUser.Id);
+
+            // Defer the response to avoid the "This interaction failed" message
+            await ctx.DeferAsync();
+
+            // Create the embed message
+            DiscordEmbedBuilder embedMessage = new DiscordEmbedBuilder()
+                .WithTitle("Profile Picture")
+                .WithDescription($"Profile Picture of {member.DisplayName}")
+                .WithImageUrl(discordUser.AvatarUrl)
+                .WithThumbnail(discordUser.AvatarUrl)
+                .WithColor(DiscordColor.SpringGreen);
+
+            // Edit the temporary response from the Defer code above with the embed message
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embedMessage));
         }
     }
 }
