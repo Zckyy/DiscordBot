@@ -60,6 +60,21 @@ namespace DiscordBotTemplateNet8.Commands.Slash
             await _commandHelper.BuildMessage(ctx, $"{randomChoice}", $"{randomChoice} has been chosen!", DiscordColor.SpringGreen);
         }
 
+        // Example of a command that displays the presence of a user
+        [SlashCommand("UserStatus", "Print the status of a discord member in this server")]
+        public async Task GetUserStatus(InteractionContext ctx, [Option("DiscordUser", "Choose a discord user on this server")] DiscordUser discordUser)
+        {
+            var member = await ctx.Guild.GetMemberAsync(discordUser.Id);
+            var status = member.Presence.Status.ToString();
+            var activityType = member.Presence.Activity.ActivityType.ToString();
+            var activityName = member.Presence.Activities.FirstOrDefault()?.Name ?? "Nothing";
+            var platform = _commandHelper.GetPlatform(member);
+
+            var description = $"Status: {status}\n Activity: {activityType} {activityName}\n Platform: {platform}";
+
+            await _commandHelper.BuildMessage(ctx, "User Status", description, DiscordColor.SpringGreen);
+        }
+
         // Example of how to get discord user profile picutre
         [SlashCommand("ProfilePicture", "Get the profile picture of a user")]
         public async Task ProfilePicture(InteractionContext ctx, [Option("DiscordUser", "Choose a discord user")] DiscordUser discordUser)
@@ -76,8 +91,9 @@ namespace DiscordBotTemplateNet8.Commands.Slash
                 .WithTitle("Profile Picture")
                 .WithDescription($"Profile Picture of {member.DisplayName}")
                 .WithImageUrl(discordUser.AvatarUrl)
-                .WithThumbnail(discordUser.AvatarUrl)
+                .WithThumbnail(discordUser.BannerUrl)
                 .WithColor(DiscordColor.SpringGreen);
+
 
             // Edit the temporary response from the Defer code above with the embed message
             await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embedMessage));

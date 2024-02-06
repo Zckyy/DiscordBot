@@ -10,6 +10,17 @@ namespace DiscordBotTemplateNet8.Helper
 {
     public class CommandHelper
     {
+        public string GetPlatform(DiscordMember member)
+        {
+            if (member.Presence.ClientStatus.Desktop.HasValue)
+                return "Desktop";
+            if (member.Presence.ClientStatus.Mobile.HasValue)
+                return "Mobile";
+            if (member.Presence.ClientStatus.Web.HasValue)
+                return "Web";
+            return "Unknown";
+        }
+
         public async Task BuildMessage(InteractionContext ctx, string title, string description, DiscordColor color)
         {
             // Defer the response to avoid the "This interaction failed" message
