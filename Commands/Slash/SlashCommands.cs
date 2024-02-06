@@ -75,7 +75,7 @@ namespace DiscordBotTemplateNet8.Commands.Slash
 
             var description = $"Status: {status}\n Activity: {activityType} {activityName}\n Platform: {platform}";
 
-            await _commandHelper.BuildMessage(ctx, "User Status", description, DiscordColor.SpringGreen);
+            await _commandHelper.BuildMessage(ctx, $" {member.Nickname ?? member.DisplayName}: User Status", description, DiscordColor.SpringGreen);
         }
 
         // Example of how to get discord user profile picutre
