@@ -67,7 +67,10 @@ namespace DiscordBotTemplateNet8.Commands.Slash
             var member = await ctx.Guild.GetMemberAsync(discordUser.Id);
             var status = member.Presence.Status.ToString();
             var activityType = member.Presence.Activity.ActivityType.ToString();
-            var activityName = member.Presence.Activities.FirstOrDefault()?.Name ?? "Nothing";
+            string? activityName = member.Presence.Activities.FirstOrDefault(x => x.ActivityType == ActivityType.Playing)?.Name ?? "Nothing";
+
+
+            // Get the platform of the user using the helper method
             var platform = _commandHelper.GetPlatform(member);
 
             var description = $"Status: {status}\n Activity: {activityType} {activityName}\n Platform: {platform}";
