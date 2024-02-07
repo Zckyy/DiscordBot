@@ -75,6 +75,7 @@ namespace DiscordBotTemplateNet8.Commands.Slash
 
             var description = $"Status: {status}\n Activity: {activityType} {activityName}\n Platform: {platform}";
 
+            // if member nickename is null use display name instead
             await _commandHelper.BuildMessage(ctx, $" {member.Nickname ?? member.DisplayName}: User Status", description, DiscordColor.SpringGreen);
         }
 
