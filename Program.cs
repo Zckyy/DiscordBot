@@ -5,6 +5,10 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.EventArgs;
 using DSharpPlus.SlashCommands;
+using DSharpPlus.Net;
+using DSharpPlus.Lavalink;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+
 
 namespace DiscordBotTemplateNet8
 {
@@ -18,6 +22,20 @@ namespace DiscordBotTemplateNet8
             var botConfig = new BotConfig();
             await botConfig.ReadJSONAsync();
 
+            // Creating a new configuration for the Lavalink client
+            var endpoint = new ConnectionEndpoint
+            {
+                Hostname = "127.0.0.1", // From your server configuration.
+                Port = 2333 // From your server configuration
+            };
+
+            var lavalinkConfig = new LavalinkConfiguration
+            {
+                Password = "youshallnotpass", // From your server configuration.
+                RestEndpoint = endpoint,
+                SocketEndpoint = endpoint
+            };
+
             // Creating a new configuration for the Discord client
             var config = new DiscordConfiguration()
             {
@@ -30,6 +48,9 @@ namespace DiscordBotTemplateNet8
             Client = new DiscordClient(config);
 
             Client.Ready += Client_Ready;
+
+            // Creating a new Lavalink client
+            var lavalink = Client.UseLavalink();
 
             // Creating a new configuration for the commands
             var commandsConfig = new CommandsNextConfiguration
@@ -46,11 +67,14 @@ namespace DiscordBotTemplateNet8
             var slashCommandsConfig = Client.UseSlashCommands();
 
             // Registering commands
+            //slashCommandsConfig.RegisterCommands<SlashCommands>();
             slashCommandsConfig.RegisterCommands<SlashCommands>(814256164069441567); // This is the guild ID where the slash commands will be registered, if you want to register them globally, remove the guild ID
-            Commands.RegisterCommands<Basic>();
 
             // Connect the client to the Discord gateway
             await Client.ConnectAsync();
+
+            await lavalink.ConnectAsync(lavalinkConfig); // Make sure this is after Discord.ConnectAsync().
+
             // Keep the program running
             await Task.Delay(-1);
         }

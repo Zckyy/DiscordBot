@@ -8,13 +8,14 @@ using System.Text;
 using System.Threading.Tasks;
 using DiscordBotTemplateNet8.Helper;
 using System.Drawing;
+using DSharpPlus.Lavalink;
+using DSharpPlus.CommandsNext.Attributes;
 
 namespace DiscordBotTemplateNet8.Commands.Slash
 {
     // Every Slash Command class must be public and inherit from ApplicationCommandModule
     public class SlashCommands : ApplicationCommandModule
     {
-
         private readonly CommandHelper _commandHelper;
 
         // Constructor
@@ -101,6 +102,142 @@ namespace DiscordBotTemplateNet8.Commands.Slash
 
             // Edit the temporary response from the Defer code above with the embed message
             await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embedMessage));
+        }
+
+        [SlashCommand("Join", "Forces the bot to join the channel the user is currently in")]
+        public async Task Join(InteractionContext ctx)
+        {
+            if (ctx.Member.VoiceState == null || ctx.Member.VoiceState.Channel == null)
+            {
+                await _commandHelper.BuildMessage(ctx, "Failed", "You are not in a voice channel.", DiscordColor.Red);
+                return;
+            }
+
+            var lava = ctx.Client.GetLavalink();
+            if (!lava.ConnectedNodes.Any())
+            {
+                await _commandHelper.BuildMessage(ctx, "Failed", "The Lavalink connection is not established.", DiscordColor.Red);
+                return;
+            }
+
+            var node = lava.ConnectedNodes.Values.First();
+            var channel = ctx.Member.VoiceState.Channel;
+
+            await node.ConnectAsync(channel);
+            await _commandHelper.BuildMessage(ctx, "Joined!", $"Joined {channel.Name}", DiscordColor.Red);
+        }
+
+
+        [SlashCommand("Leave", "Forces the bot to leave the channel the user is currently in")]
+        public async Task Leave(InteractionContext ctx)
+        {
+            if (ctx.Member.VoiceState == null || ctx.Member.VoiceState.Channel == null)
+            {
+                await _commandHelper.BuildMessage(ctx, "Failed", "You are not in a voice channel.", DiscordColor.Red);
+                return;
+            }
+
+            var lava = ctx.Client.GetLavalink();
+            if (!lava.ConnectedNodes.Any())
+            {
+                await _commandHelper.BuildMessage(ctx, "Failed", "The Lavalink connection is not established.", DiscordColor.Red);
+                return;
+            }
+
+            var node = lava.ConnectedNodes.Values.First();
+            var channel = ctx.Member.VoiceState.Channel;
+
+            var conn = node.GetGuildConnection(channel.Guild);
+
+            if (conn == null)
+            {
+                await _commandHelper.BuildMessage(ctx, "Failed", "I am not connected to any channels.", DiscordColor.Red);
+                return;
+            }
+
+            await conn.DisconnectAsync();
+            await _commandHelper.BuildMessage(ctx, "Left!", $"Left {channel.Name}", DiscordColor.Red);
+        }
+
+
+        [SlashCommand("Play", "Forces the bot to play music based on a URL link or search query")]
+        public async Task Play(InteractionContext ctx,
+                      [Option("URL", "URL to media. If not provided, the bot will search for the query.")] string url = null,
+                      [Option("Query", "Search query. Ignored if URL is provided.")] string query = null)
+        {
+            if (ctx.Member.VoiceState == null || ctx.Member.VoiceState.Channel == null)
+            {
+                await _commandHelper.BuildMessage(ctx, "Failed", "You are not in a voice channel.", DiscordColor.Red);
+                return;
+            }
+
+            var lava = ctx.Client.GetLavalink();
+            var node = lava.ConnectedNodes.Values.First();
+            var conn = node.GetGuildConnection(ctx.Member.VoiceState.Guild);
+
+            if (conn == null)
+            {
+                await _commandHelper.BuildMessage(ctx, "Failed", "LavaLink is not connected", DiscordColor.Red);
+                return;
+            }
+
+            LavalinkLoadResult loadResult;
+            if (!string.IsNullOrWhiteSpace(url))
+            {
+                Uri mediaUri = new Uri(url);
+                loadResult = await node.Rest.GetTracksAsync(mediaUri);
+            }
+            else if (!string.IsNullOrWhiteSpace(query))
+            {
+                loadResult = await node.Rest.GetTracksAsync(query);
+            }
+            else
+            {
+                await _commandHelper.BuildMessage(ctx, "Failed", "Please provide either a URL or a search query.", DiscordColor.Red);
+                return;
+            }
+
+            if (loadResult.LoadResultType == LavalinkLoadResultType.LoadFailed
+                || loadResult.LoadResultType == LavalinkLoadResultType.NoMatches)
+            {
+                await _commandHelper.BuildMessage(ctx, "Failed", $"Search failed for {url ?? query}", DiscordColor.Red);
+                return;
+            }
+
+            var track = loadResult.Tracks.First();
+
+            await conn.PlayAsync(track);
+
+            await _commandHelper.BuildMessage(ctx, "Playing track!", $"Now playing {url ?? query}", DiscordColor.Red);
+        }
+
+
+        [SlashCommand("Pause", "Forces the bot to pause current media")]
+        public async Task Pause(InteractionContext ctx)
+        {
+            if (ctx.Member.VoiceState == null || ctx.Member.VoiceState.Channel == null)
+            {
+                await _commandHelper.BuildMessage(ctx, "Failed", "You are not in a voice channel.", DiscordColor.Red);
+                return;
+            }
+
+            var lava = ctx.Client.GetLavalink();
+            var node = lava.ConnectedNodes.Values.First();
+            var conn = node.GetGuildConnection(ctx.Member.VoiceState.Guild);
+
+            if (conn == null)
+            {
+                await _commandHelper.BuildMessage(ctx, "Failed", "LavaLink is not connected", DiscordColor.Red);
+                return;
+            }
+
+            if (conn.CurrentState.CurrentTrack == null)
+            {
+                await _commandHelper.BuildMessage(ctx, "Failed", "No track is currently playing", DiscordColor.Red);
+                return;
+            }
+
+            await conn.PauseAsync();
         }
     }
 }
